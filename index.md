@@ -1,37 +1,181 @@
-## Welcome to GitHub Pages
+# Verticle Gateway Operator
 
-You can use the [editor on GitHub](https://github.com/verticle-io/spring-cloud-gateway-operator/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+A kubernetes operator that spawns and configures instances of Spring Cloud Gateway on your cluster.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+The gateway operator utilizes the new [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) and is configured by CRDs like `Gateway`, `GatewayClass` and `HTTPRoute`.
 
-### Markdown
+The operator also takes additional metadata configuration to leverage SCG features like rate-limiting, dedup, rewrites etc.
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+# Features
 
-```markdown
-Syntax highlighted code block
+## Behind-Ingress or Loadbalancer
 
-# Header 1
-## Header 2
-### Header 3
+Gateways can be configured to either expose as LoadBalancer or be positioned as ingressed service.
 
-- Bulleted
-- List
+## Self-Configuring Gateways
+Spawned Gateways will watch specs like `HTTPRoutes`, `TCPRoutes` to configure themselves at runtime.
 
-1. Numbered
-2. List
+## Extended Authorization methods with APIKeys
 
-**Bold** and _Italic_ and `Code` text
+The gateways support standard OIDC which can be configured with a broad range of identity providers which already works of-the-shelf with Spring Security 5.
 
-[Link](url) and ![Image](src)
+In addition machine-to-machine communication can be secured using APIKeys with headers, e.g. `Authorization: apikey <BRILLIANTSECRET>`
+
+APIKeys are configured via standard Kubernetes `Secrets`. 
+
+# Quickstart
+
+## Installation
+
+### via Kubectl
+
+```
+$ kubectl apply -n gateway-operator -f https://raw.githubusercontent.com/verticleio/gateway-operator/stable/manifests/install.yaml 
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+### via Helm
 
-### Jekyll Themes
+```
+$ helm repo add verticle-operator https://github.com/verticle-io/gateway-operator
+"verticle-operator" has been added to your repositories
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/verticle-io/spring-cloud-gateway-operator/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+$ helm install --name my-release verticle-operator/gateway-operator
+NAME: my-release
+...
+```
 
-### Support or Contact
+Checkout configuration values on the wiki.
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+## Create a new GatewayClass
+
+Following the API specs, GatewayClass resources are supposed to be provisioned by the infrastructure provider, who manages the cluster. They can supply multiple different Gateway types with specific configuration.
+
+```yaml
+cat <<EOF | kubectl apply -f -
+apiVersion: networking.x-k8s.io/v1alpha1
+kind: GatewayClass
+metadata: 
+    name: secured-gateway
+spec:
+    controller: "io.verticle.operator/gateway-operator"
+     parametersRef:
+        group: io.verticle.operator/v1alpha1
+        kind: Config
+        name: secured-gateway-config
+
+---
+# Configuring a gateway class that supports APIKey auth
+kind: Config
+apiVersion: io.verticle.operator/v1alpha1
+metadata:
+  name: secured-gateway-config
+spec:
+  daemonSet: 
+    enabled: false
+  replicaSet:
+    replicas: 3 // (default)
+  auth-apikey:
+    from: Kubernetes
+    namespace: default
+
+EOF
+```
+
+The operator will register this `GatewayClass` configuration and watch for approproate `Gateway` CRDs matching it.
+
+## Spawning a Gateway
+
+Users ref the GatewayClass and define a gateway that will route their workload traffic. They specify the frontend port and protocol the gateway will listen on.
+
+The operator will spawn the Spring Cloud Gateway while watching this CRD.
+
+```yaml
+cat <<EOF | kubectl apply -f -
+apiVersion: networking.x-k8s.io/v1alpha1
+kind: Gateway
+metadata: 
+    name: private-gateway
+spec:
+    gatewayClassName: io.verticle.operator/secured-gateway-config
+    addresses: []
+    listeners:
+        - protocol: HTTP
+          port: 80
+          routes:
+            kind: HTTPRoute
+            selector: 
+                matchLabels:
+                    app: route-echo
+EOF
+```
+
+All routes matching `app: route-echo` will be selected for this gateway.
+
+## Configuring a HTTP route
+
+
+Routing definitions are decoupled and match to a `Gateway`. 
+
+```yaml
+cat <<EOF | kubectl apply -f -
+apiVersion: networking.x-k8s.io/v1alpha1
+kind: HTTPRoute
+metadata:
+    name: route-echo-http-1
+    labels:
+        route-echo
+spec:
+    gateways:
+        allow: SameNamespace
+        gatewayRefs:
+            - name: private-gateway
+              namespace: default
+    hostnames:
+        - "example.com"
+    rules:
+        - matches:
+            - path:
+                type: Exact
+                value: /echo
+          forwardTo:
+            - serviceName: echoservice
+              port: 8080
+              weight: 100
+        - matches:
+            - path:
+                type: Exact
+                value: /get
+          forwardTo:
+            - serviceName: httpbin.org
+              port: 80
+              weight: 100
+
+
+EOF
+```
+
+# Documentation
+
+See wiki.
+
+# Roadmap
+
+## Vault support for APIKeys
+
+Storing and managing APIKeys in vaults, e.g. Azure Keyvault, HashiCorp Vault etc.
+
+## Horizontal Pod Autoscaling
+
+Support for autoscaling gateway pods.
+
+## Operator Frontend
+
+Managing gateways, configure routes and security in webbased frontend.
+
+## OLM support
+
+Deploying and managing the Operator lifecycle via [OLM](https://github.com/operator-framework/operator-lifecycle-manager)
+
+## Customization Support
+
+Ability to spawn your own extensions of the standard Spring Cloud Gateway functionality via the operator
