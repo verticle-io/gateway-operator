@@ -2,8 +2,10 @@
 
 A kubernetes operator that spawns and configures  instances of [Spring Cloud Gateway](https://cloud.spring.io/spring-cloud-gateway/reference/html/) on your cluster.
 
-It uses Verticle's implementation of Spring Cloud Gateway with enhancements: https://github.com/verticle-io/spring-cloud-gateway-kubernetes 
+It uses Verticle's implementation of Spring Cloud Gateway with enhancements: [https://github.com/verticle-io/spring-cloud-gateway-kubernetes](https://github.com/verticle-io/spring-cloud-gateway-kubernetes) 
 
+
+![image](/verticle-gateway-operator.png)
 
 # Gateway Operator Features
 
