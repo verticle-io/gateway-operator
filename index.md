@@ -1,12 +1,18 @@
 # Verticle Gateway Operator
 
-A kubernetes operator that spawns and configures instances of Spring Cloud Gateway on your cluster.
+A kubernetes operator that spawns and configures  instances of [Spring Cloud Gateway](https://cloud.spring.io/spring-cloud-gateway/reference/html/) on your cluster.
+
+It uses Verticle's implementation of Spring Cloud Gateway with enhancements: https://github.com/verticle-io/spring-cloud-gateway-kubernetes 
+
+
+# Gateway Operator Features
+
+## Cloud native deployment
 
 The gateway operator utilizes the new [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) and is configured by CRDs like `Gateway`, `GatewayClass` and `HTTPRoute`.
 
 The operator also takes additional metadata configuration to leverage SCG features like rate-limiting, dedup, rewrites etc.
 
-# Features
 
 ## Behind-Ingress or Loadbalancer
 
@@ -22,6 +28,27 @@ The gateways support standard OIDC which can be configured with a broad range of
 In addition machine-to-machine communication can be secured using APIKeys with headers, e.g. `Authorization: apikey <BRILLIANTSECRET>`
 
 APIKeys are configured via standard Kubernetes `Secrets`. 
+
+# About Spring Cloud Gateway
+
+In case you are not familiar with SCG, a short intro from the docs:
+
+_"This project provides a library for building an API Gateway on top of Spring WebFlux. Spring Cloud Gateway aims to provide a simple, yet effective way to route to APIs and provide cross cutting concerns to them such as: security, monitoring/metrics, and resiliency."_
+
+* Built on Spring Framework 5, Project Reactor and Spring Boot 2.0
+* Able to match routes on any request attribute.
+
+* Predicates and filters are specific to routes.
+
+* Circuit Breaker integration.
+
+* Spring Cloud DiscoveryClient integration
+
+* Easy to write Predicates and Filters
+
+* Request Rate Limiting
+
+* Path Rewriting
 
 # Quickstart
 
