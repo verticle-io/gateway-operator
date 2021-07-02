@@ -57,9 +57,10 @@
 					</image>
 					<docker>
 						<publishRegistry>
-							<username>${DOCKER_REGISTRY_USER}</username>
-							<password>${DOCKER_REGISTRY_SECRET}</password>
-							<url>${registry_url}</url>
+							<username>${env.DOCKER_REGISTRY_USER}</username>
+							<password>${env.DOCKER_REGISTRY_SECRET}</password>
+							<url>${env.DOCKER_REGISTRY_URL}</url>
+							<email>${env.DOCKER_REGISTRY_EMAIL}</email>
 						</publishRegistry>
 					</docker>
 				</configuration>
