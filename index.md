@@ -83,29 +83,28 @@ Following the API specs, GatewayClass resources are supposed to be provisioned b
 cat <<EOF | kubectl apply -f -
 apiVersion: networking.x-k8s.io/v1alpha1
 kind: GatewayClass
-metadata: 
-    name: secured-gateway
+metadata:
+  name: secured-gateway
 spec:
-    controller: "io.verticle.operator/gateway-operator"
-     parametersRef:
-        group: io.verticle.operator/v1alpha1
-        kind: Config
-        name: secured-gateway-config
+  controller: "io.verticle.operator/gateway-apikey"
+  parametersRef:
+    group: v1
+    kind: ConfigMap
+    name: secured-gateway-config
 
 ---
 # Configuring a gateway class that supports APIKey auth
-kind: Config
-apiVersion: io.verticle.operator/v1alpha1
+kind: ConfigMap
+#apiVersion: io.verticle.operator/v1alpha1
+apiVersion: v1
 metadata:
   name: secured-gateway-config
-spec:
-  daemonSet: 
-    enabled: false
-  replicaSet:
-    replicas: 3 // (default)
-  auth-apikey:
-    from: Kubernetes
-    namespace: default
+
+data:
+  daemonSetEnabled: false
+  replicas: 3 // (default)
+  auth-apikey-from: Kubernetes
+  auth-apikey-namespace: default
 
 EOF
 ```
@@ -122,19 +121,19 @@ The operator will spawn the Spring Cloud Gateway while watching this CRD.
 cat <<EOF | kubectl apply -f -
 apiVersion: networking.x-k8s.io/v1alpha1
 kind: Gateway
-metadata: 
-    name: private-gateway
+metadata:
+  name: private-gateway
 spec:
-    gatewayClassName: io.verticle.operator/secured-gateway-config
-    addresses: []
-    listeners:
-        - protocol: HTTP
-          port: 80
-          routes:
-            kind: HTTPRoute
-            selector: 
-                matchLabels:
-                    app: route-echo
+  gatewayClassName: secured-gateway
+  addresses: []
+  listeners:
+    - protocol: HTTP
+      port: 80
+      routes:
+        kind: HTTPRoute
+        selector:
+          matchLabels:
+            route: route-echo
 EOF
 ```
 
@@ -150,34 +149,34 @@ cat <<EOF | kubectl apply -f -
 apiVersion: networking.x-k8s.io/v1alpha1
 kind: HTTPRoute
 metadata:
-    name: route-echo-http-1
-    labels:
-        route-echo
+  name: route-echo-http-1
+  labels:
+    route: route-echo
 spec:
-    gateways:
-        allow: SameNamespace
-        gatewayRefs:
-            - name: private-gateway
-              namespace: default
-    hostnames:
-        - "example.com"
-    rules:
-        - matches:
-            - path:
-                type: Exact
-                value: /echo
-          forwardTo:
-            - serviceName: echoservice
-              port: 8080
-              weight: 100
-        - matches:
-            - path:
-                type: Exact
-                value: /get
-          forwardTo:
-            - serviceName: httpbin.org
-              port: 80
-              weight: 100
+  gateways:
+    allow: SameNamespace
+    gatewayRefs:
+      - name: private-gateway
+        namespace: default
+  hostnames:
+    - "localhost"
+  rules:
+    - matches:
+        - path:
+            type: Exact
+            value: /echo
+      forwardTo:
+        - serviceName: echoservice
+          port: 8080
+          weight: 100
+    - matches:
+        - path:
+            type: Exact
+            value: /get
+      forwardTo:
+        - serviceName: httpbin.org
+          port: 80
+          weight: 100
 
 
 EOF
