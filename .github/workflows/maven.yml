@@ -22,4 +22,5 @@ jobs:
         java-version: '11'
         distribution: 'adopt'
     - name: Build with Maven
-      run: mvn -B package -Dmaven.test.skip=true --file pom.xml
+      run: mvn -B spring-boot:build-image -Dmaven.test.skip=true --file pom.xml
+      # mvn -B package -Dmaven.test.skip=true --file pom.xml
