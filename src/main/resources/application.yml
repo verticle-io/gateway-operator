@@ -1,0 +1,20 @@
+server:
+  port: 9001
+
+javaoperatorsdk:
+  controllers:
+    customservicecontroller:
+      retry:
+        maxAttempts: 3
+
+gateways:
+  apikey:
+    containerImage: verticleio/spring-cloud-gateway:0.0.1-SNAPSHOT
+    controllerName: io.verticle.operator/gateway-apikey
+
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true

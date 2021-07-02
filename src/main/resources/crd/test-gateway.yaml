@@ -1,0 +1,15 @@
+apiVersion: networking.x-k8s.io/v1alpha1
+kind: Gateway
+metadata:
+  name: private-gateway
+spec:
+  gatewayClassName: secured-gateway
+  addresses: []
+  listeners:
+    - protocol: HTTP
+      port: 80
+      routes:
+        kind: HTTPRoute
+        selector:
+          matchLabels:
+            route: route-echo

@@ -1,0 +1,24 @@
+apiVersion: networking.x-k8s.io/v1alpha1
+kind: GatewayClass
+metadata:
+  name: secured-gateway
+spec:
+  controller: "io.verticle.operator/gateway-apikey"
+  parametersRef:
+    group: v1
+    kind: ConfigMap
+    name: secured-gateway-config
+
+---
+# Configuring a gateway class that supports APIKey auth
+kind: ConfigMap
+#apiVersion: io.verticle.operator/v1alpha1
+apiVersion: v1
+metadata:
+  name: secured-gateway-config
+
+data:
+  daemonSetEnabled: false
+  replicas: 3 // (default)
+  auth-apikey-from: Kubernetes
+  auth-apikey-namespace: default
