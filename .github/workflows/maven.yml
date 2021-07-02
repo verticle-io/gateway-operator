@@ -22,5 +22,10 @@ jobs:
         java-version: '11'
         distribution: 'adopt'
     - name: Build with Maven
+      env:
+          DOCKER_REGISTRY_USER: ${{ secrets.DOCKER_REGISTRY_USER }}
+          DOCKER_REGISTRY_SECRET: ${{ secrets.DOCKER_REGISTRY_SECRET }}
+          DOCKER_REGISTRY_URL: ${{ secrets.DOCKER_REGISTRY_URL }}
+          DOCKER_REGISTRY_EMAIL: ${{ secrets.DOCKER_REGISTRY_EMAIL }}
       run: mvn -B spring-boot:build-image -Dmaven.test.skip=true --file pom.xml
       # mvn -B package -Dmaven.test.skip=true --file pom.xml
