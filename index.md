@@ -59,17 +59,17 @@ _"This project provides a library for building an API Gateway on top of Spring W
 ### via Kubectl
 
 ```
-$ kubectl apply -n gateway-operator -f https://raw.githubusercontent.com/verticleio/gateway-operator/stable/manifests/install.yaml 
+$ kubectl apply -n gateway-operator -f https://raw.githubusercontent.com/verticle-io/gateway-operator/main/manifests/install.yaml 
 ```
 
 ### via Helm
 
 ```
-$ helm repo add verticle-operator https://github.com/verticle-io/gateway-operator
-"verticle-operator" has been added to your repositories
+$ helm repo add verticle https://raw.githubusercontent.com/verticle-io/gateway-operator/main/charts
+"verticle" has been added to your repositories
 
-$ helm install --name my-release verticle-operator/gateway-operator
-NAME: my-release
+$ helm install --name gateway-operator verticle/gateway-operator
+NAME: gateway-operator
 ...
 ```
 
