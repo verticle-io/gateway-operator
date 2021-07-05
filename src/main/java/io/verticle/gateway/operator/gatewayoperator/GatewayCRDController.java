@@ -16,12 +16,13 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Controller
 public class GatewayCRDController implements ResourceController<Gateway> {
 
-    public static final String TYPE_LOAD_BALANCER = "LoadBalancer";
+    private static final Logger log = LoggerFactory.getLogger(GatewayCRDController.class);
 
     @Autowired
     GatewayCatalog catalog;
@@ -30,7 +31,9 @@ public class GatewayCRDController implements ResourceController<Gateway> {
     String imagePullPolicy;
 
     public static final String KIND = "Gateway";
-    private static final Logger log = LoggerFactory.getLogger(GatewayCRDController.class);
+    public static final String TYPE_LOAD_BALANCER = "LoadBalancer";
+    public static final String LABEL_SERVICEACCOUNT_KEY = "app.kubernetes.io/name";
+    public static final String LABEL_SERVICEACCOUNT_VALUE = "verticle-gateway-operator";
     public static final String LABEL_IO_VERTICLE_GATEWAY_NAME = "io.verticle.gateway.name";
     public static final String LABEL_APP = "app";
     public static final String PREFIX_GATEWAY = "gateway-";
@@ -86,7 +89,9 @@ public class GatewayCRDController implements ResourceController<Gateway> {
             if (namespace == null)
                 namespace = "default";
 
+            List<ServiceAccount> serviceAccountList = kubernetesClient.serviceAccounts().withLabel(LABEL_SERVICEACCOUNT_KEY, LABEL_SERVICEACCOUNT_VALUE).list().getItems();
 
+            log.info("located service accounts: " + serviceAccountList.size());
 
             int podsExisting = kubernetesClient
                     .pods()
@@ -94,7 +99,7 @@ public class GatewayCRDController implements ResourceController<Gateway> {
                     .withLabel(LABEL_IO_VERTICLE_GATEWAY_NAME, resource.getMetadata().getName())
                     .list().getItems().size();
 
-            if (podsExisting == 0){
+            if (podsExisting == 0 && serviceAccountList.size() > 0){
                 log.info("launching new gateway {}", resource.getMetadata().getName());
                 log.info("using gateway image pull policy ", imagePullPolicy);
 
@@ -106,6 +111,7 @@ public class GatewayCRDController implements ResourceController<Gateway> {
                         .addToLabels(LABEL_IO_VERTICLE_GATEWAY_NAME, resource.getMetadata().getName())
                         .endMetadata()
                         .withSpec(new PodSpecBuilder()
+                                .withServiceAccount(serviceAccountList.get(0).getMetadata().getName())
                                 .withContainers(new ContainerBuilder()
                                         .withName(PREFIX_GATEWAY + resource.getMetadata().getName())
                                         .withImage(gatewayimpl.getContainerImage())
