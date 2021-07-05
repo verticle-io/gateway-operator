@@ -17,6 +17,9 @@ gateways:
 
 
 management:
+  info:
+    git:
+      mode: "full"
   endpoint:
     health:
       probes:
