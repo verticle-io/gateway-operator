@@ -1,0 +1,102 @@
+---
+# Source: verticle-gateway-operator/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: manifest-verticle-gateway-operator
+  labels:
+    helm.sh/chart: verticle-gateway-operator-0.1.0
+    app.kubernetes.io/name: verticle-gateway-operator
+    app.kubernetes.io/instance: manifest
+    app.kubernetes.io/version: "0.0.1-SNAPSHOT"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: verticle-gateway-operator/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: manifest-verticle-gateway-operator
+  labels:
+    helm.sh/chart: verticle-gateway-operator-0.1.0
+    app.kubernetes.io/name: verticle-gateway-operator
+    app.kubernetes.io/instance: manifest
+    app.kubernetes.io/version: "0.0.1-SNAPSHOT"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: verticle-gateway-operator
+    app.kubernetes.io/instance: manifest
+---
+# Source: verticle-gateway-operator/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: manifest-verticle-gateway-operator
+  labels:
+    helm.sh/chart: verticle-gateway-operator-0.1.0
+    app.kubernetes.io/name: verticle-gateway-operator
+    app.kubernetes.io/instance: manifest
+    app.kubernetes.io/version: "0.0.1-SNAPSHOT"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: verticle-gateway-operator
+      app.kubernetes.io/instance: manifest
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: verticle-gateway-operator
+        app.kubernetes.io/instance: manifest
+    spec:
+      serviceAccountName: manifest-verticle-gateway-operator
+      securityContext:
+        {}
+      containers:
+        - name: verticle-gateway-operator
+          securityContext:
+            {}
+          image: "verticleio/gateway-operator:0.0.1-SNAPSHOT"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9001
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+          resources:
+            {}
+---
+# Source: verticle-gateway-operator/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "manifest-verticle-gateway-operator-test-connection"
+  labels:
+    helm.sh/chart: verticle-gateway-operator-0.1.0
+    app.kubernetes.io/name: verticle-gateway-operator
+    app.kubernetes.io/instance: manifest
+    app.kubernetes.io/version: "0.0.1-SNAPSHOT"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['manifest-verticle-gateway-operator:80']
+  restartPolicy: Never
