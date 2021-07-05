@@ -66,9 +66,10 @@ $ kubectl apply -n gateway-operator -f https://raw.githubusercontent.com/verticl
 
 ```
 $ helm repo add verticle https://raw.githubusercontent.com/verticle-io/gateway-operator/main/charts
+$ helm repo update
 "verticle" has been added to your repositories
 
-$ helm install --name gateway-operator verticle/gateway-operator
+$ helm install operator verticle/verticle-gateway-operator
 NAME: gateway-operator
 ...
 ```
