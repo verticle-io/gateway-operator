@@ -7,6 +7,8 @@ javaoperatorsdk:
       retry:
         maxAttempts: 3
 
+gateway.image.pullPolicy: IfNotPresent
+
 gateways:
   apikey:
     containerImage: verticleio/spring-cloud-gateway:0.0.1-SNAPSHOT

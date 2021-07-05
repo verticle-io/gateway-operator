@@ -12,6 +12,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,8 +22,12 @@ import java.util.Map;
 public class GatewayCRDController implements ResourceController<Gateway> {
 
     public static final String TYPE_LOAD_BALANCER = "LoadBalancer";
+
     @Autowired
     GatewayCatalog catalog;
+
+    @Value("${gateway.image.pullPolicy:IfNotPresent}")
+    String imagePullPolicy;
 
     public static final String KIND = "Gateway";
     private static final Logger log = LoggerFactory.getLogger(GatewayCRDController.class);
@@ -91,6 +96,7 @@ public class GatewayCRDController implements ResourceController<Gateway> {
 
             if (podsExisting == 0){
                 log.info("launching new gateway {}", resource.getMetadata().getName());
+                log.info("using gateway image pull policy ", imagePullPolicy);
 
                 Pod pod = new PodBuilder()
                         .withNewMetadata()
@@ -103,7 +109,7 @@ public class GatewayCRDController implements ResourceController<Gateway> {
                                 .withContainers(new ContainerBuilder()
                                         .withName(PREFIX_GATEWAY + resource.getMetadata().getName())
                                         .withImage(gatewayimpl.getContainerImage())
-                                        .withImagePullPolicy("Never")
+                                        .withImagePullPolicy(imagePullPolicy)
                                         .withPorts(new ContainerPortBuilder()
                                                 .withName("http")
                                                 .withContainerPort(GW_CONTAINER_PORT)

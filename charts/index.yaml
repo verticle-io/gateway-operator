@@ -3,12 +3,12 @@ entries:
   verticle-gateway-operator:
   - apiVersion: v2
     appVersion: 0.0.1-SNAPSHOT
-    created: "2021-07-02T21:44:52.772454+02:00"
+    created: "2021-07-05T16:05:38.325371+02:00"
     description: A Kubernetes Operator spawning Spring Cloud Gateways using CRDs
-    digest: a876caed2f5be98a46fea7468560cd618027f326d7587c7df17d36e5bebd279b
+    digest: 4b9e0b7f702b6f02176442be147c1582fc70ffa129ffa41c0fa4e2f8214ef8ce
     name: verticle-gateway-operator
     type: application
     urls:
     - verticle-gateway-operator-0.1.0.tgz
     version: 0.1.0
-generated: "2021-07-02T21:44:52.771392+02:00"
+generated: "2021-07-05T16:05:38.318236+02:00"
