@@ -7,7 +7,8 @@ javaoperatorsdk:
       retry:
         maxAttempts: 3
 
-gateway.image.pullPolicy: IfNotPresent
+gateway.image.pullPolicy: Always
+#IfNotPresent
 
 gateways:
   apikey:
