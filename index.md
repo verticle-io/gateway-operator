@@ -54,7 +54,17 @@ _"This project provides a library for building an API Gateway on top of Spring W
 
 # Quickstart
 
-## Installation
+## Prepare CRDs
+
+Install CRDs of the Gateway API manually
+
+Use with latest release https://github.com/kubernetes-sigs/gateway-api/releases (current is v0.3.0):
+
+```
+kubectl kustomize "github.com/kubernetes-sigs/gateway-api/config/crd?ref=v0.3.0" | kubectl apply -f -
+```
+
+## Operator Installation
 
 ### via Kubectl
 
