@@ -193,6 +193,29 @@ spec:
 EOF
 ```
 
+## Configure an APIKey as secret
+
+Create one or more secrets in the same namespace as the Gateway.
+
+```
+$ kubectl create secret generic apikey-1 \
+  --from-literal=key=foo \
+  --from-literal=name=testkey \
+  --from-literal=owner=sam@verticle.io \
+  --from-literal=purpose=testing
+  
+$ kubectl label secret apikey-1 io.verticle.authgateway=apikey
+  
+```
+
+## Test Authentication
+
+Add the `Authorization` header to your request, like
+
+```
+$ curl -v http://localhost/get -H "Authorization: apikey foo"
+```
+
 # Documentation
 
 See wiki.
